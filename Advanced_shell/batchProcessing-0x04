@@ -22,6 +22,14 @@ fetch_pokemon_data() {
     fi
 }
 
+# Trap Ctrl+C and cleanup
+cleanup() {
+    echo "Cleaning up..."
+    jobs -p | xargs kill -9 2>/dev/null
+    exit 1
+}
+trap cleanup INT
+
 # Array to store background process IDs
 pids=()
 
@@ -31,9 +39,13 @@ for pokemon in "${pokemon_list[@]}"; do
     pids+=($!)  # Store the process ID of the background job
 done
 
-# Wait for all background processes to complete
-for pid in "${pids[@]}"; do
-    wait "$pid"
+# Monitor jobs and wait for completion
+while true; do
+    active_jobs=$(jobs -p | wc -l)
+    if [ "$active_jobs" -eq 0 ]; then
+        break
+    fi
+    sleep 1
 done
 
 echo "Parallel data fetching complete."
