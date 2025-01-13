@@ -9,7 +9,9 @@ echo "Name,Height,Weight" > "$OUTPUT_CSV"
 # Process all JSON files and extract data
 for json_file in *.json; do
     if [ -f "$json_file" ]; then
-        jq -r '[.name, .height, .weight] | @csv' "$json_file" >> "$OUTPUT_CSV"
+        # Extract data and process with sed to format names
+        jq -r '[.name, .height, .weight] | @csv' "$json_file" |
+        sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g' >> "$OUTPUT_CSV"
     fi
 done
 
